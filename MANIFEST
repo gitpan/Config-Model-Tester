@@ -1,0 +1,12 @@
+Build.PL
+Changes
+LICENSE
+MANIFEST
+MANIFEST.SKIP
+META.json
+META.yml
+Makefile.PL
+README.pod
+lib/Config/Model/Tester.pm
+t/model_tests.t
+t/pod.t
