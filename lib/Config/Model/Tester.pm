@@ -9,7 +9,7 @@
 #
 package Config::Model::Tester;
 {
-  $Config::Model::Tester::VERSION = '2.041_01';
+  $Config::Model::Tester::VERSION = '2.041';
 }
 
 use warnings;
@@ -23,6 +23,9 @@ use File::Path;
 use File::Copy;
 use File::Copy::Recursive qw(fcopy rcopy dircopy);
 use File::Find;
+
+use Path::Class ;
+
 use File::Spec ;
 use Test::Warn;
 use Test::Exception;
@@ -48,31 +51,47 @@ require Exporter;
 $File::Copy::Recursive::DirPerms = 0755;
 
 sub setup_test {
-    my ( $model_test, $t_name, $wr_root ) = @_;
+    my ( $model_test, $t_name, $wr_root, $setup ) = @_;
 
     # cleanup before tests
-    rmtree($wr_root);
-    mkpath( $wr_root, { mode => 0755 } );
+    $wr_root->rmtree();
+    $wr_root->mkpath( 0, { mode => 0755 } );
 
-    my $wr_dir    = $wr_root . '/test-' . $t_name.'/';
+    my $wr_dir    = $wr_root->subdir('test-' . $t_name);
     my $conf_file ;
-    $conf_file = "$wr_dir/$conf_dir/$conf_file_name" if defined $conf_file_name;
+    $conf_file = $wr_dir->file($conf_dir,$conf_file_name) if defined $conf_file_name;
 
-    my $ex_data = "t/model_tests.d/$model_test-examples/$t_name";
+    my $ex_dir = dir('t')->subdir('model_tests.d', "$model_test-examples");
+    my $ex_data = -d $ex_dir->subdir($t_name)->stringify ? $ex_dir->subdir($t_name) : $ex_dir->file($t_name);
     my @file_list;
-    if ( -d $ex_data ) {
-
+    if ($setup) {
+        foreach my $file (keys %$setup) {
+            my $map = $setup->{$file} ;
+            my $destination_str
+                = ref ($map) eq 'HASH' ? $map->{$^O} // $map->{default}
+                :                        $map;
+            if (not defined $destination_str) {
+                die "$model_test $t_name setup error: cannot find destination for test file $file" ;
+            }
+            my $destination = $wr_dir->file($destination_str) ;
+            $destination->parent->mkpath(0 , { mode => 0755 }) ;
+            my $data = $ex_data->file($file)->slurp() ;
+            $destination->spew( $data );
+            @file_list = list_test_files ($wr_dir);
+        }
+    }
+    elsif ( $ex_data->is_dir ) {
         # copy whole dir
-        my $debian_dir = "$wr_dir/" ;
-        $debian_dir .= $conf_dir if $conf_dir;
-        dircopy( $ex_data, $debian_dir )
+        my $debian_dir = $conf_dir ? $wr_dir->subdir($conf_dir) : $wr_dir ;
+        $debian_dir->mkpath(0, { mode => 0755 });
+        dircopy( $ex_data->stringify, $debian_dir->stringify )
           || die "dircopy $ex_data -> $debian_dir failed:$!";
         @file_list = list_test_files ($debian_dir);
     }
     else {
 
         # just copy file
-        fcopy( $ex_data, $conf_file )
+        fcopy( $ex_data->stringify, $conf_file->stringify )
           || die "copy $ex_data -> $conf_file failed:$!";
     }
     ok( 1, "Copied $model_test example $t_name" );
@@ -92,7 +111,7 @@ sub list_test_files {
             wanted => sub { push @file_list, $_ unless -d; },
             no_chdir => 1
         },
-        $debian_dir
+        $debian_dir->stringify
     );
     map { s!^$debian_dir!/!; } @file_list;
     return sort @file_list;
@@ -136,16 +155,15 @@ sub run_model_test {
         note("Beginning subtest $model_test $t_name");
 
         my ($wr_dir, $conf_file, $ex_data, @file_list) 
-            = setup_test ($model_test, $t_name, $wr_root);
+            = setup_test ($model_test, $t_name, $wr_root,$t->{setup});
             
-        if ($t->{config_file}) { 
-            my ($v,$local_conf_dir,$f) = File::Spec->splitpath($wr_dir.$t->{config_file}) ;
-            mkpath($local_conf_dir,{mode => 0755} );
+        if ($t->{config_file}) {
+            $wr_dir->file($t->{config_file})->parent->mkpath(0,{mode => 0755} ) ;
         }
 
         my $inst = $model->instance(
             root_class_name => $model_to_test,
-            root_dir        => $wr_dir,
+            root_dir        => $wr_dir->stringify,
             instance_name   => "$model_test-" . $t_name,
             config_file     => $t->{config_file} ,
             check           => $t->{load_check} || 'yes',
@@ -258,11 +276,10 @@ sub run_model_test {
         }
 
         my @new_file_list;
-        if ( -d $ex_data ) {
+        if ( $ex_data->is_dir ) {
 
             # copy whole dir
-            my $debian_dir = "$wr_dir/" ;
-            $debian_dir .= $conf_dir if $conf_dir;
+            my $debian_dir = $conf_dir ? $wr_dir->subdir($conf_dir) : $wr_dir ;
             my @new_file_list = list_test_files($debian_dir) ;
             $t->{file_check_sub}->( \@file_list )
               if defined $t->{file_check_sub};
@@ -271,8 +288,7 @@ sub run_model_test {
         }
 
         # create another instance to read the conf file that was just written
-        my $wr_dir2 = $wr_dir ;
-        $wr_dir2 =~ s!/$!-w/!;
+        my $wr_dir2 = $wr_dir->stringify .'-w' ;
         dircopy( $wr_dir, $wr_dir2 )
           or die "can't copy from $wr_dir to $wr_dir2: $!";
 
@@ -345,7 +361,7 @@ sub run_tests {
     ok( 1, "compiled" );
 
     # pseudo root where config files are written by config-model
-    my $wr_root = 'wr_root';
+    my $wr_root = dir('wr_root');
 
     my @group_of_tests = grep { /-test-conf.pl$/ } glob("t/model_tests.d/*");
 
@@ -390,14 +406,27 @@ cases per model.
 
 A specific layout for test files must be followed
 
-=head2 Test file layout
+=head2 Simple test file layout
 
  t/model_tests.d
  |-- fstab-examples
  |   |-- t0
  |   \-- t1
- |-- fstab-test-conf.pl
- |-- debian-dpkg-examples
+ \-- fstab-test-conf.pl
+
+In the example above, we have 1 model to test: C<fstab>.
+
+Test specification is written in C<fatab-test-conf.pl> file. Test cases are 
+plain files in C<fstab-examples>. C<fstab-test-conf.pl> will contain instruction so
+that each file will be used as a C</etc/fstab> test case. 
+
+C<fatab-test-conf.pl> can contain specifications for more test case. Each test case will 
+require a new file in C<fstab-examples> directory.
+
+=head2 Test file layout for multi-file configuration
+
+ t/model_tests.d
+ |-- dpkg-examples
  |   \-- libversion
  |       \-- debian
  |           |-- changelog
@@ -408,14 +437,39 @@ A specific layout for test files must be followed
  |           |-- source
  |           |   \-- format
  |           \-- watch
- \-- debian-dpkg-test-conf.pl
+ \-- dpkg-test-conf.pl
 
-In the example above, we have 2 models to test: C<fstab> and C<debian-dpkg>.
+In the example above, the test specification is written in C<dpkg-test-
+conf.pl>. Dpkg layout requires several files per test case. C<dpkg-test-
+conf.pl> will contain instruction so that each directory under C<dpkg-
+examples> will be used.
 
-Each model test has specification in C<*-test-conf.pl> files. Test cases are 
-either plain files or directories in C<*-examples> . The former is fine if 
-your model deal with one file (e.g. C</etc/fstab>. Complete directories are
-required if your model deal with several files (e.g. Debian source package).
+=head2 Test file layout depending on system
+
+ t/model_tests.d/
+ |-- ssh-examples
+ \-- basic
+ |   |-- system_ssh_config
+ |   \-- user_ssh_config
+ \-- ssh-test-conf.pl
+
+In this example, the layout of the configuration files depend on the
+system. For instance, system ssh_config is stored in C</etc/ssh> on
+Linux, and directly in C</etc> on MacOS.
+
+C<ssh-test-conf.pl> will specify the target path of each file. I.e.:
+
+ $home_for_test = $^O eq 'darwin' ? '/Users/joe'
+                :                   '/home/joe' ;
+
+ # ...
+
+      setup => {
+        'system_ssh_config' => {
+            'darwin' => '/etc/ssh_config',
+            'default' => '/etc/ssh/ssh_config',
+        },
+        'user_ssh_config' => "$home_for_test/.ssh/config"
 
 =head2 Basic test specification
 
@@ -480,7 +534,16 @@ sequence may be altered by adding specification in the test case:
 
 =item *
 
-Setup test in C<< wr_root/<subtest name>/ >>
+Setup test in C<< wr_root/<subtest name>/ >>. If your configuration file layout depend
+on the target system, you will have to specify the path using C<setup> parameter:
+
+ setup => {
+    'file_name_in_examples_dir' => {
+        'darwin' => '/etc/foo', # macosx
+        'default' => '/etc/bar' # others
+    },
+    'another_file_in_examples_dir' => $computed_path
+ }
 
 =item *
 

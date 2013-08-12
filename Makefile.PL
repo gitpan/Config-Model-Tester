@@ -26,6 +26,7 @@ my %WriteMakefileArgs = (
     "File::Copy::Recursive" => 0,
     "File::HomeDir" => 0,
     "Log::Log4perl" => "1.11",
+    "Path::Class" => 0,
     "Test::Differences" => 0,
     "Test::Exception" => 0,
     "Test::File::Contents" => 0,
@@ -34,7 +35,7 @@ my %WriteMakefileArgs = (
     "Test::Warn" => 0
   },
   "TEST_REQUIRES" => {},
-  "VERSION" => "2.041_01",
+  "VERSION" => "2.041",
   "test" => {
     "TESTS" => "t/*.t"
   }

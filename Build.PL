@@ -18,7 +18,7 @@ my %module_build_args = (
     "Dominique Dumont"
   ],
   "dist_name" => "Config-Model-Tester",
-  "dist_version" => "2.041_01",
+  "dist_version" => "2.041",
   "license" => "lgpl",
   "module_name" => "Config::Model::Tester",
   "recommends" => {},
@@ -27,6 +27,7 @@ my %module_build_args = (
     "File::Copy::Recursive" => 0,
     "File::HomeDir" => 0,
     "Log::Log4perl" => "1.11",
+    "Path::Class" => 0,
     "Test::Differences" => 0,
     "Test::Exception" => 0,
     "Test::File::Contents" => 0,

@@ -1,3 +1,7 @@
+2.041 2013-08-12
+
+  * rewrote using Path::Class. Added setup parameter
+
 2.041_01 2013-08-11
 
   * Initial release. This module was moved from Config-Model 
