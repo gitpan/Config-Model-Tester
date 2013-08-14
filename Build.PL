@@ -18,7 +18,7 @@ my %module_build_args = (
     "Dominique Dumont"
   ],
   "dist_name" => "Config-Model-Tester",
-  "dist_version" => "2.041",
+  "dist_version" => "2.042",
   "license" => "lgpl",
   "module_name" => "Config::Model::Tester",
   "recommends" => {},
@@ -33,7 +33,8 @@ my %module_build_args = (
     "Test::File::Contents" => 0,
     "Test::Memory::Cycle" => 0,
     "Test::More" => 0,
-    "Test::Warn" => 0
+    "Test::Warn" => 0,
+    "perl" => "5.010"
   },
   "script_files" => [],
   "test_requires" => {}

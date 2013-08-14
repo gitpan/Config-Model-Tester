@@ -25,8 +25,9 @@ requires:
   Test::Memory::Cycle: 0
   Test::More: 0
   Test::Warn: 0
+  perl: 5.010
 resources:
   bugtracker: http://rt.cpan.org/NoAuth/Bugs.html?Dist=Config-Model-Tester
   homepage: https://github.com/dod38fr/config-model/wiki
   repository: git://github.com/dod38fr/config-model-tester.git
-version: 2.041
+version: 2.042

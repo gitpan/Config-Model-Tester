@@ -1,3 +1,8 @@
+2.042 2013-08-14
+
+  * fix file created/removed comparison
+  * added require perl5.10
+
 2.041 2013-08-12
 
   * rewrote using Path::Class. Added setup parameter

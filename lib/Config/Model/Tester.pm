@@ -9,7 +9,7 @@
 #
 package Config::Model::Tester;
 {
-  $Config::Model::Tester::VERSION = '2.041';
+  $Config::Model::Tester::VERSION = '2.042';
 }
 
 use warnings;
@@ -113,7 +113,7 @@ sub list_test_files {
         },
         $debian_dir->stringify
     );
-    map { s!^$debian_dir!/!; } @file_list;
+    map { s!^$debian_dir!!; } @file_list;
     return sort @file_list;
 }
 
