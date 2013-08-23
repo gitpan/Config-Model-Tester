@@ -9,7 +9,7 @@
 #
 package Config::Model::Tester;
 {
-  $Config::Model::Tester::VERSION = '2.042';
+  $Config::Model::Tester::VERSION = '2.043';
 }
 
 use warnings;
@@ -259,19 +259,19 @@ sub run_model_test {
         
         if (my $fc = $t->{file_content}) {
             foreach my $f (keys %$fc) {
-                file_contents_eq_or_diff $wr_dir.$f,  $fc->{$f},  "check content of $f";
+                file_contents_eq_or_diff $wr_dir->file($f)->stringify,  $fc->{$f},  "check content of $f";
             } 
         }
 
         if (my $fc = $t->{file_contents_like}) {
             foreach my $f (keys %$fc) {
-                file_contents_like $wr_dir.$f,  $fc->{$f},  "check that $f matches regexp";
+                file_contents_like $wr_dir->file($f)->stringify,  $fc->{$f},  "check that $f matches regexp";
             } 
         }
 
         if (my $fc = $t->{file_contents_unlike}) {
             foreach my $f (keys %$fc) {
-                file_contents_unlike $wr_dir.$f,  $fc->{$f},  "check that $f does not match regexp";
+                file_contents_unlike $wr_dir->file($f)->stringify,  $fc->{$f},  "check that $f does not match regexp";
             } 
         }
 

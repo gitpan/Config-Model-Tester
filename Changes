@@ -1,3 +1,7 @@
+2.043 2013-08-23
+
+  * fix file_content* tests (bad path computation)
+
 2.042 2013-08-14
 
   * fix file created/removed comparison

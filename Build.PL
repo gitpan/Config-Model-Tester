@@ -10,7 +10,6 @@ my %module_build_args = (
     "Module::Build" => "0.3601"
   },
   "configure_requires" => {
-    "ExtUtils::MakeMaker" => "6.30",
     "Module::Build" => "0.3601"
   },
   "dist_abstract" => "Test framework for Config::Model",
@@ -18,7 +17,7 @@ my %module_build_args = (
     "Dominique Dumont"
   ],
   "dist_name" => "Config-Model-Tester",
-  "dist_version" => "2.042",
+  "dist_version" => "2.043",
   "license" => "lgpl",
   "module_name" => "Config::Model::Tester",
   "recommends" => {},

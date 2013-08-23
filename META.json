@@ -21,7 +21,6 @@
       },
       "configure" : {
          "requires" : {
-            "ExtUtils::MakeMaker" : "6.30",
             "Module::Build" : "0.3601"
          }
       },
@@ -54,6 +53,6 @@
          "web" : "http://github.com/dod38fr/config-model-tester.git"
       }
    },
-   "version" : "2.042"
+   "version" : "2.043"
 }
 
