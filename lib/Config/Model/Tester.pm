@@ -9,7 +9,7 @@
 #
 package Config::Model::Tester;
 {
-  $Config::Model::Tester::VERSION = '2.043';
+  $Config::Model::Tester::VERSION = '2.044';
 }
 
 use warnings;
@@ -55,7 +55,7 @@ sub setup_test {
 
     # cleanup before tests
     $wr_root->rmtree();
-    $wr_root->mkpath( 0, { mode => 0755 } );
+    $wr_root->mkpath( { mode => 0755 } );
 
     my $wr_dir    = $wr_root->subdir('test-' . $t_name);
     my $conf_file ;
@@ -74,7 +74,7 @@ sub setup_test {
                 die "$model_test $t_name setup error: cannot find destination for test file $file" ;
             }
             my $destination = $wr_dir->file($destination_str) ;
-            $destination->parent->mkpath(0 , { mode => 0755 }) ;
+            $destination->parent->mkpath( { mode => 0755 }) ;
             my $data = $ex_data->file($file)->slurp() ;
             $destination->spew( $data );
             @file_list = list_test_files ($wr_dir);
@@ -83,7 +83,7 @@ sub setup_test {
     elsif ( $ex_data->is_dir ) {
         # copy whole dir
         my $debian_dir = $conf_dir ? $wr_dir->subdir($conf_dir) : $wr_dir ;
-        $debian_dir->mkpath(0, { mode => 0755 });
+        $debian_dir->mkpath( { mode => 0755 });
         dircopy( $ex_data->stringify, $debian_dir->stringify )
           || die "dircopy $ex_data -> $debian_dir failed:$!";
         @file_list = list_test_files ($debian_dir);
@@ -158,7 +158,7 @@ sub run_model_test {
             = setup_test ($model_test, $t_name, $wr_root,$t->{setup});
             
         if ($t->{config_file}) {
-            $wr_dir->file($t->{config_file})->parent->mkpath(0,{mode => 0755} ) ;
+            $wr_dir->file($t->{config_file})->parent->mkpath({mode => 0755} ) ;
         }
 
         my $inst = $model->instance(
@@ -257,21 +257,36 @@ sub run_model_test {
         $inst->write_back( force => 1 );
         ok( 1, "$model_test write back done" );
         
-        if (my $fc = $t->{file_content}) {
+        if (my $fc = $t->{file_contents} || $t->{file_content}) {
             foreach my $f (keys %$fc) {
-                file_contents_eq_or_diff $wr_dir->file($f)->stringify,  $fc->{$f},  "check content of $f";
+                my $t = $fc->{$f} ;
+                my @tests = ref $t eq 'ARRAY' ? @$t : ($t) ;
+                foreach (@tests) {
+                    file_contents_eq_or_diff $wr_dir->file($f)->stringify,  $_,
+                        "check that $f contains $_";
+                }
             } 
         }
 
         if (my $fc = $t->{file_contents_like}) {
             foreach my $f (keys %$fc) {
-                file_contents_like $wr_dir->file($f)->stringify,  $fc->{$f},  "check that $f matches regexp";
+                my $t = $fc->{$f} ;
+                my @tests = ref $t eq 'ARRAY' ? @$t : ($t) ;
+                foreach (@tests) {
+                    file_contents_like $wr_dir->file($f)->stringify,  $_,
+                        "check that $f matches regexp $_";
+                }
             } 
         }
 
         if (my $fc = $t->{file_contents_unlike}) {
             foreach my $f (keys %$fc) {
-                file_contents_unlike $wr_dir->file($f)->stringify,  $fc->{$f},  "check that $f does not match regexp";
+                my $t = $fc->{$f} ;
+                my @tests = ref $t eq 'ARRAY' ? @$t : ($t) ;
+                foreach (@tests) {
+                    file_contents_unlike $wr_dir->file($f)->stringify,  $_,
+                        "check that $f does not match regexp $_";
+                }
             } 
         }
 
@@ -637,14 +652,16 @@ You can skip warning when writing back with:
 
 =item *
 
-Check the content of the written files(s) with L<Test::File::Contents>:
+Check the content of the written files(s) with L<Test::File::Contents>. Tests can be grouped
+in an array ref:
 
-   file_content => { 
+   file_contents => {
             "/home/foo/my_arm.conf" => "really big string" ,
+            "/home/bar/my_arm.conf" => [ "really big string" , "another"], ,
         }
    
    file_contents_like => {
-            "/home/foo/my_arm.conf" => qr/should be there/ ,
+            "/home/foo/my_arm.conf" => [ qr/should be there/, qr/as well/ ] ,
    }
 
    file_contents_unlike => {
