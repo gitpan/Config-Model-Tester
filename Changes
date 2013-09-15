@@ -1,3 +1,7 @@
+2.045 2013-09-15
+
+    * Fix broken tests on Windows (mixup between / and \ )
+
 2.044 2013-09-07
 
     * accept array ref for file_contents* tests
