@@ -9,7 +9,7 @@
 #
 package Config::Model::Tester;
 {
-  $Config::Model::Tester::VERSION = '2.045';
+  $Config::Model::Tester::VERSION = '2.046';
 }
 
 use warnings;

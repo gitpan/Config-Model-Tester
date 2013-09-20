@@ -1,3 +1,7 @@
+2.046 2013-09-20
+
+    * depends on Path::Class >= 0.29
+
 2.045 2013-09-15
 
     * Fix broken tests on Windows (mixup between / and \ )
