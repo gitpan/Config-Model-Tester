@@ -9,3 +9,4 @@ README.pod
 lib/Config/Model/Tester.pm
 t/model_tests.t
 t/pod.t
+weaver.ini

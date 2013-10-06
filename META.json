@@ -4,7 +4,7 @@
       "Dominique Dumont"
    ],
    "dynamic_config" : 0,
-   "generated_by" : "Dist::Zilla version 4.300037, CPAN::Meta::Converter version 2.132510",
+   "generated_by" : "Dist::Zilla version 4.300039, CPAN::Meta::Converter version 2.132510",
    "license" : [
       "lgpl_2_1"
    ],
@@ -26,8 +26,11 @@
       },
       "runtime" : {
          "requires" : {
+            "File::Copy" : "0",
             "File::Copy::Recursive" : "0",
-            "File::HomeDir" : "0",
+            "File::Find" : "0",
+            "File::Path" : "0",
+            "File::Spec" : "0",
             "Log::Log4perl" : "1.11",
             "Path::Class" : "0.29",
             "Test::Differences" : "0",
@@ -53,6 +56,6 @@
          "web" : "http://github.com/dod38fr/config-model-tester.git"
       }
    },
-   "version" : "2.046"
+   "version" : "2.047"
 }
 
