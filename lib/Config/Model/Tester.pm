@@ -1,18 +1,15 @@
 #
 # This file is part of Config-Model-Tester
 #
-# This software is Copyright (c) 2013 by Dominique Dumont.
+# This software is Copyright (c) 2014 by Dominique Dumont.
 #
 # This is free software, licensed under:
 #
 #   The GNU Lesser General Public License, Version 2.1, February 1999
 #
 package Config::Model::Tester;
-{
-  $Config::Model::Tester::VERSION = '2.047';
-}
 # ABSTRACT: Test framework for Config::Model
-
+$Config::Model::Tester::VERSION = '2.048';
 use warnings;
 use strict;
 use locale;
@@ -316,6 +313,7 @@ sub run_model_test {
             root_dir        => $wr_dir2->stringify,
             config_file     => $t->{config_file} ,
             instance_name   => "$model_test-$t_name-w",
+            check           => $t->{load_check2} || 'yes',
         );
 
         ok( $i2_test, "Created instance $model_test-test-$t_name-w" );
@@ -401,13 +399,15 @@ __END__
 
 =pod
 
+=encoding UTF-8
+
 =head1 NAME
 
 Config::Model::Tester - Test framework for Config::Model
 
 =head1 VERSION
 
-version 2.047
+version 2.048
 
 =head1 SYNOPSIS
 
@@ -658,7 +658,7 @@ by passing a hash ref instead of a scalar :
 
     check  => [
         'sections:debian packages:0' , { qw/mode layered value dpkg-dev/},
-        ''sections:base packages:0',   { qw/mode layered value gcc-4.2-base/},
+        'sections:base packages:0',    { qw/mode layered value gcc-4.2-base/},
     ],
 
 The whole hash content (except "value") is passed to  L<grab|Config::Model::AnyThing/"grab(...)">
@@ -723,6 +723,11 @@ the original configuration.
 
 Create another configuration instance to read the conf file that was just copied
 (configuration data is checked.)
+
+=item *
+
+You can skip the load check if the written file still contain errors (e.g.
+some errors were ignored and cannot be fixed) with C<< load_check2 => 'no' >>
 
 =item *
 
@@ -803,7 +808,7 @@ The test is specified in L<dpkg-test-conf.pl|http://anonscm.debian.org/gitweb/?p
 =item *
 
 L<multistrap-test-conf.pl|https://github.com/dod38fr/config-model/blob/master/t/model_tests.d/multistrap-test-conf.pl>
-amd L<multistrap-examples|https://github.com/dod38fr/config-model/tree/master/t/model_tests.d/multistrap-examples>
+and L<multistrap-examples|https://github.com/dod38fr/config-model/tree/master/t/model_tests.d/multistrap-examples>
 specify a test where the configuration file name is not imposed by the
 application. The file name must then be set in the test specification.
 
@@ -834,7 +839,7 @@ Dominique Dumont
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is Copyright (c) 2013 by Dominique Dumont.
+This software is Copyright (c) 2014 by Dominique Dumont.
 
 This is free software, licensed under:
 
